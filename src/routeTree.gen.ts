@@ -14,6 +14,8 @@ import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DownloadRouteImport } from './routes/download'
 import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as DocsSplatRouteImport } from './routes/docs.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,41 +42,71 @@ const FeaturesRoute = FeaturesRouteImport.update({
   path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsSplatRoute = DocsSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => DocsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/download': typeof DownloadRoute
   '/features': typeof FeaturesRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs/': typeof DocsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/docs': typeof DocsRoute
   '/download': typeof DownloadRoute
   '/features': typeof FeaturesRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs': typeof DocsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/download': typeof DownloadRoute
   '/features': typeof FeaturesRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs/': typeof DocsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/changelog' | '/docs' | '/download' | '/features'
+  fullPaths:
+    | '/'
+    | '/changelog'
+    | '/docs'
+    | '/download'
+    | '/features'
+    | '/docs/$'
+    | '/docs/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/changelog' | '/docs' | '/download' | '/features'
-  id: '__root__' | '/' | '/changelog' | '/docs' | '/download' | '/features'
+  to: '/' | '/changelog' | '/download' | '/features' | '/docs/$' | '/docs'
+  id:
+    | '__root__'
+    | '/'
+    | '/changelog'
+    | '/docs'
+    | '/download'
+    | '/features'
+    | '/docs/$'
+    | '/docs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChangelogRoute: typeof ChangelogRoute
-  DocsRoute: typeof DocsRoute
+  DocsRoute: typeof DocsRouteWithChildren
   DownloadRoute: typeof DownloadRoute
   FeaturesRoute: typeof FeaturesRoute
 }
@@ -116,13 +148,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs/': {
+      id: '/docs/'
+      path: '/'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/$': {
+      id: '/docs/$'
+      path: '/$'
+      fullPath: '/docs/$'
+      preLoaderRoute: typeof DocsSplatRouteImport
+      parentRoute: typeof DocsRoute
+    }
   }
 }
+
+interface DocsRouteChildren {
+  DocsSplatRoute: typeof DocsSplatRoute
+  DocsIndexRoute: typeof DocsIndexRoute
+}
+
+const DocsRouteChildren: DocsRouteChildren = {
+  DocsSplatRoute: DocsSplatRoute,
+  DocsIndexRoute: DocsIndexRoute,
+}
+
+const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChangelogRoute: ChangelogRoute,
-  DocsRoute: DocsRoute,
+  DocsRoute: DocsRouteWithChildren,
   DownloadRoute: DownloadRoute,
   FeaturesRoute: FeaturesRoute,
 }

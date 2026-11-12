@@ -1,49 +1,80 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Search } from "lucide-react";
-import { TOOLS } from "@/lib/site";
+import { createFileRoute, Outlet, useNavigate, useParams } from "@tanstack/react-router";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { DocsSidebar } from "@/components/docs/DocsSidebar";
+import { DocsSearch } from "@/components/docs/DocsSearch";
+import { DEFAULT_DOC, getDoc, getFlat, VERSIONS, VERSION_LABELS } from "@/lib/docs";
 
 export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
       { title: "Documentation — StoryModEngine" },
-      { name: "description", content: "Guides and reference for StoryModEngine tools and SME Scripting." },
+      { name: "description", content: "Technical documentation for StoryModEngine." },
       { property: "og:title", content: "Documentation — StoryModEngine" },
-      { property: "og:description", content: "Guides and reference for StoryModEngine tools and SME Scripting." },
+      { property: "og:description", content: "Technical documentation for StoryModEngine." },
     ],
   }),
-  component: Docs,
+  component: DocsLayout,
 });
 
-const SECTIONS = [
-  { title: "Getting started", items: ["Introduction", "Installation"] },
-  { title: "Tools", items: TOOLS.map((t) => t.name) },
-];
+function DocsLayout() {
+  const { _splat } = useParams({ strict: false }) as { _splat?: string };
+  const current = _splat?.replace(/\/$/, "");
+  const version = current?.split("/")[0] ?? VERSIONS[0] ?? "latest";
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
-function Docs() {
+  const switchVersion = (v: string) => {
+    const rest = current?.split("/").slice(1).join("/");
+    const target = rest && getDoc(`${v}/${rest}`) ? `${v}/${rest}` : getFlat(v)[0]?.id ?? DEFAULT_DOC;
+    navigate({ to: "/docs/$", params: { _splat: target } });
+  };
+
+  const controls = (
+    <div className="space-y-3">
+      <DocsSearch version={version} />
+      <label className="block">
+        <span className="sr-only">Documentation version</span>
+        <select value={version} onChange={(e) => switchVersion(e.target.value)} className="w-full rounded-lg border bg-surface px-3 py-2 text-sm">
+          {VERSIONS.map((v) => <option key={v} value={v}>{VERSION_LABELS[v] ?? v}</option>)}
+        </select>
+      </label>
+    </div>
+  );
+
   return (
-    <div className="mx-auto grid max-w-6xl gap-10 px-6 pt-32 md:grid-cols-[240px_1fr]">
-      <aside className="md:sticky md:top-28 md:self-start space-y-6">
-        <div className="glass flex items-center gap-2 rounded-xl px-3 py-2 text-sm">
-          <Search size={14} className="text-muted-foreground" />
-          <input placeholder="Search docs" className="w-full bg-transparent outline-none placeholder:text-muted-foreground" />
-        </div>
-        <select className="w-full rounded-lg border bg-surface px-3 py-2 text-sm" aria-label="Version"><option>Latest</option></select>
-        {SECTIONS.map((s) => (
-          <div key={s.title}>
-            <p className="eyebrow mb-2">{s.title}</p>
-            <ul className="space-y-1 border-l text-sm">
-              {s.items.map((i, idx) => (
-                <li key={i}><span className={`-ml-px block border-l px-3 py-1 ${idx === 0 && s.title === "Getting started" ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>{i}</span></li>
-              ))}
-            </ul>
+    <div className="mx-auto max-w-[90rem] px-4 pt-24 md:px-6 lg:pt-28">
+      <div className="mb-6 flex items-center gap-3 lg:hidden">
+        <button type="button" onClick={() => setMobileOpen(true)} className="glass flex items-center gap-2 rounded-xl px-3 py-2 text-sm">
+          <Menu size={16} /> Menu
+        </button>
+        <div className="flex-1"><DocsSearch version={version} /></div>
+      </div>
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[55] bg-background/70 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)}>
+          <div className="glass h-full w-80 max-w-[85vw] overflow-y-auto rounded-r-2xl p-5 animate-rise" onClick={(e) => e.stopPropagation()}>
+            <div className="relative mb-5 flex items-center justify-between">
+              <span className="font-medium">Documentation</span>
+              <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)}><X size={18} /></button>
+            </div>
+            <div className="relative space-y-6">
+              <select value={version} onChange={(e) => switchVersion(e.target.value)} className="w-full rounded-lg border bg-surface px-3 py-2 text-sm" aria-label="Documentation version">
+                {VERSIONS.map((v) => <option key={v} value={v}>{VERSION_LABELS[v] ?? v}</option>)}
+              </select>
+              <DocsSidebar version={version} current={current} onNavigate={() => setMobileOpen(false)} />
+            </div>
           </div>
-        ))}
-      </aside>
-      <article className="max-w-2xl">
-        <p className="eyebrow">Getting started</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">Introduction</h1>
-        <p className="mt-5 text-lg leading-relaxed text-muted-foreground">StoryModEngine is an in-game content creation engine for Minecraft Java Edition 1.20.1. The documentation is being written and will grow with each release.</p>
-      </article>
+        </div>
+      )}
+      <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
+        <aside className="hidden lg:block">
+          <div className="sticky top-28 max-h-[calc(100vh-8rem)] space-y-6 overflow-y-auto pb-10 pr-2">
+            {controls}
+            <DocsSidebar version={version} current={current} />
+          </div>
+        </aside>
+        <Outlet />
+      </div>
     </div>
   );
 }
