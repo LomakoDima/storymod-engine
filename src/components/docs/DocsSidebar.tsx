@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { getNav } from "@/lib/docs";
 
-export function DocsSidebar({ version, current, onNavigate }: { version: string; current?: string; onNavigate?: () => void }) {
+export function DocsSidebar({ version, current, onNavigate }: { version: string; current?: string | undefined; onNavigate?: (() => void) | undefined }) {
   const nav = getNav(version);
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   return (

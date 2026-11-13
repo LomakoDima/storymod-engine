@@ -28,3 +28,4 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+- Docs content lives as Markdown in src/content/docs/<version>/<section>/<page>.md, loaded by src/lib/docs.ts via import.meta.glob; why: adding a file adds a page with no code changes.

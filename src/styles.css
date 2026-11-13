@@ -174,3 +174,4 @@
 .hljs-title, .hljs-section, .hljs-name { color: oklch(0.8 0.1 230); font-weight: 500; }
 .hljs-variable, .hljs-template-variable, .hljs-meta { color: oklch(0.78 0.1 300); }
 .hljs-bullet, .hljs-punctuation { color: oklch(0.65 0.01 265); }
+.docs-prose > :first-child { margin-top: 1.5rem; }

@@ -34,7 +34,7 @@ const CALLOUTS = {
   pending: { label: "Pending documentation", Icon: Clock },
 } as const;
 
-function CodeBlock({ text, lang, children }: { text: string; lang?: string; children: ReactNode }) {
+function CodeBlock({ text, lang, children }: { text: string; lang?: string | undefined; children: ReactNode }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="docs-code group">
@@ -58,7 +58,7 @@ function CodeBlock({ text, lang, children }: { text: string; lang?: string; chil
   );
 }
 
-function Anchor({ id, children, level }: { id?: string; children: ReactNode; level: 2 | 3 }) {
+function Anchor({ id, children, level }: { id?: string | undefined; children: ReactNode; level: 2 | 3 }) {
   const Tag = level === 2 ? "h2" : "h3";
   return (
     <Tag id={id} className="docs-heading">

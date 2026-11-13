@@ -20,7 +20,7 @@ export type Doc = {
   title: string;
   description: string;
   order: number;
-  status?: string;
+  status: string | undefined;
   body: string;
   headings: Heading[];
   plain: string;
@@ -33,9 +33,9 @@ const files = import.meta.glob("/src/content/docs/**/*.md", {
 }) as Record<string, string>;
 
 function parse(path: string, raw: string): Doc {
-  const [version, section, file] = path.replace("/src/content/docs/", "").split("/");
+  const [version = "", section = "", file = ""] = path.replace("/src/content/docs/", "").split("/");
   const slug = file.replace(/\.md$/, "");
-  const meta: Record<string, string> = {};
+  const meta: { title?: string; description?: string; order?: string; status?: string } & Record<string, string | undefined> = {};
   let body = raw;
   const fm = raw.match(/^---\n([\s\S]*?)\n---\n?/);
   if (fm) {
@@ -53,18 +53,19 @@ function parse(path: string, raw: string): Doc {
     if (inCode) continue;
     const m = line.match(/^(#{1,6})\s+(.+?)\s*$/);
     if (!m) continue;
-    const text = m[2].replace(/[`*_]/g, "");
+    const text = (m[2] ?? "").replace(/[`*_]/g, "");
     const id = slugger.slug(text);
-    if (m[1].length === 2 || m[1].length === 3) headings.push({ depth: m[1].length, text, id });
+    const depth = m[1]?.length ?? 0;
+    if (depth === 2 || depth === 3) headings.push({ depth, text, id });
   }
   const plain = body.replace(/```[\s\S]*?```/g, " ").replace(/[#>*`|\-[\]!]/g, " ").replace(/\s+/g, " ");
   return {
     id: `${version}/${section}/${slug}`,
     version, section, slug,
-    title: meta.title ?? slug,
-    description: meta.description ?? "",
-    order: Number(meta.order ?? 99),
-    status: meta.status,
+    title: meta["title"] ?? slug,
+    description: meta["description"] ?? "",
+    order: Number(meta["order"] ?? 99),
+    status: meta["status"],
     body, headings, plain,
   };
 }

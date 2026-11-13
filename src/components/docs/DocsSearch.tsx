@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, CornerDownLeft } from "lucide-react";
 import { searchDocs, sectionTitle } from "@/lib/docs";
 
@@ -26,7 +27,7 @@ export function DocsSearch({ version }: { version: string }) {
     const r = results[i];
     if (!r) return;
     setOpen(false);
-    navigate({ to: "/docs/$", params: { _splat: r.doc.id }, hash: r.heading?.id });
+    navigate({ to: "/docs/$", params: { _splat: r.doc.id }, ...(r.heading ? { hash: r.heading.id } : {}) });
   };
 
   return (
@@ -36,13 +37,14 @@ export function DocsSearch({ version }: { version: string }) {
         <span className="flex-1 text-left">Search docs</span>
         <kbd className="rounded border px-1.5 font-mono text-[10px]">Ctrl K</kbd>
       </button>
-      {open && (
+      {open && createPortal(
         <div className="fixed inset-0 z-[60] flex items-start justify-center bg-background/70 px-4 pt-[12vh] backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="glass w-full max-w-xl overflow-hidden rounded-2xl animate-rise" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Search documentation">
             <div className="relative flex items-center gap-3 border-b px-4">
               <Search size={16} className="text-muted-foreground" />
               <input
                 ref={input}
+                autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={(e) => {
@@ -71,7 +73,8 @@ export function DocsSearch({ version }: { version: string }) {
               ))}
             </ul>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );
