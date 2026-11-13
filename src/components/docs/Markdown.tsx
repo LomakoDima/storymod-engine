@@ -84,7 +84,7 @@ export function Markdown({ source }: { source: string }) {
           },
           table: ({ children }) => <div className="docs-table"><table>{children}</table></div>,
           blockquote: ({ node, children }) => {
-            const type = (node as unknown as HNode).properties?.dataCallout as keyof typeof CALLOUTS | undefined;
+            const type = (node as unknown as HNode).properties?.["dataCallout"] as keyof typeof CALLOUTS | undefined;
             if (!type) return <blockquote>{children}</blockquote>;
             const { label, Icon } = CALLOUTS[type];
             return (

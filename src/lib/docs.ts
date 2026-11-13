@@ -40,7 +40,7 @@ function parse(path: string, raw: string): Doc {
   const fm = raw.match(/^---\n([\s\S]*?)\n---\n?/);
   if (fm) {
     body = raw.slice(fm[0].length);
-    for (const line of fm[1].split("\n")) {
+    for (const line of (fm[1] ?? "").split("\n")) {
       const i = line.indexOf(":");
       if (i > 0) meta[line.slice(0, i).trim()] = line.slice(i + 1).trim().replace(/^"|"$/g, "");
     }
