@@ -17,7 +17,7 @@ function rehypeCallouts() {
         const t = p?.children?.[0];
         const m = t?.type === "text" ? t.value?.match(/^\[!(NOTE|TIP|WARNING|PENDING)\]\s*/i) : null;
         if (t && m) {
-          n.properties = { ...n.properties, dataCallout: m[1].toLowerCase() };
+          n.properties = { ...n.properties, dataCallout: (m[1] ?? "note").toLowerCase() };
           t.value = t.value!.slice(m[0].length);
         }
       }
@@ -79,7 +79,7 @@ export function Markdown({ source }: { source: string }) {
           h3: ({ id, children }) => <Anchor id={id} level={3}>{children}</Anchor>,
           pre: ({ node, children }) => {
             const code = (node as unknown as HNode).children?.[0];
-            const cls = (code?.properties?.className as string[] | undefined)?.find((c) => c.startsWith("language-"));
+            const cls = (code?.properties?.["className"] as string[] | undefined)?.find((c) => c.startsWith("language-"));
             return <CodeBlock text={toText(node as unknown as HNode)} lang={cls?.replace("language-", "")}>{children}</CodeBlock>;
           },
           table: ({ children }) => <div className="docs-table"><table>{children}</table></div>,
